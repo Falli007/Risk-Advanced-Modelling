@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Cached raw API pulls — large and reproducible via the notebooks.
+# .meta.json sidecars (pull date + query params) are kept out of git too,
+# since they only make sense alongside the data they describe.
+data/raw/
+
+# Local screenshot scratch space
+.playwright-mcp/
