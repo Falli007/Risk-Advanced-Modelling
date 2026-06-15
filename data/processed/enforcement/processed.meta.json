@@ -1,0 +1,8 @@
+{
+  "category": "drug",
+  "generated_at": "2026-06-14T16:50:04.843665+00:00",
+  "files": {
+    "firm_watchlist.csv": "740 firms, risk-scored",
+    "recall_volume.csv": "168 monthly recall-volume rows with anomaly flags"
+  }
+}

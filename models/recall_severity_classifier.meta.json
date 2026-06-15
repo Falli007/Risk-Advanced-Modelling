@@ -1,0 +1,49 @@
+{
+  "model": "LogisticRegression (TF-IDF + OneHotEncoder pipeline)",
+  "purpose": "Predict P(recall is Class I) from recall text and metadata, for firm-level severity scoring",
+  "category": "drug",
+  "text_feature": "reason_for_recall",
+  "categorical_features": [
+    "state",
+    "voluntary_mandated"
+  ],
+  "training_rows": 3000,
+  "class_balance": {
+    "class_1": 297,
+    "other": 2703
+  },
+  "cv_method": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+  "cv_roc_auc": 0.9730639730639732,
+  "cv_classification_report": {
+    "0": {
+      "precision": 0.9890625,
+      "recall": 0.9367369589345172,
+      "f1-score": 0.96218886566597,
+      "support": 2703.0
+    },
+    "1": {
+      "precision": 0.6113636363636363,
+      "recall": 0.9057239057239057,
+      "f1-score": 0.7299864314789688,
+      "support": 297.0
+    },
+    "accuracy": 0.9336666666666666,
+    "macro avg": {
+      "precision": 0.8002130681818181,
+      "recall": 0.9212304323292115,
+      "f1-score": 0.8460876485724693,
+      "support": 3000.0
+    },
+    "weighted avg": {
+      "precision": 0.9516703124999999,
+      "recall": 0.9336666666666666,
+      "f1-score": 0.9392008246814569,
+      "support": 3000.0
+    }
+  },
+  "trained_at": "2026-06-14T16:50:04.722722+00:00",
+  "caveats": [
+    "Class I recalls are ~10% of the dataset; metrics are 5-fold cross-validated out-of-fold predictions, not a single train/test split, to avoid an unstable estimate from a small positive class.",
+    "Trained on recall *text and metadata*, not outcomes \u2014 it predicts how 'Class-I-like' a recall reads, which correlates with but does not guarantee the regulator's actual classification for novel cases."
+  ]
+}
