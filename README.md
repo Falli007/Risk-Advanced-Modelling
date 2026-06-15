@@ -1,40 +1,13 @@
 # Risk & Advanced Modelling — Simulation Project
 
-An end-to-end portfolio project simulating the work of a **Data Scientist – Risk &
-Advanced Modelling** consultant working client-facing in **regulated / life-sciences**
-environments: four independent risk-analytics modules, each pulling **real, live, public
-regulatory data**, built into reusable risk-scoring/ML components, and surfaced through an
-interactive dashboard with stakeholder-facing reports.
+Four independent risk-analytics modules for a regulated/life-sciences setting, each
+pulling **real, live, public regulatory data** (openFDA, ClinicalTrials.gov, US Treasury
+OFAC), built on a shared risk-scoring/ML framework, and surfaced through an interactive
+dashboard with stakeholder-facing reports.
 
-See [CLAUDE.md](CLAUDE.md) for the full role brief, module specs, and working conventions
-this project follows.
-
-## What this demonstrates
-
-- **Connecting to and wrangling real regulatory/clinical data** — openFDA (FAERS adverse
-  events, drug/device enforcement recalls), ClinicalTrials.gov, and US Treasury OFAC
-  sanctions data, with all the messiness (missing fields, inconsistent coding, reporting
-  lag) that comes with it.
-- **Predictive modelling** — two supervised classifiers (recall severity, clinical trial
-  termination risk) evaluated with 5-fold cross-validation, not a single misleading
-  train/test split, with documented class-imbalance caveats.
-- **Statistical signal & anomaly detection** — disproportionality analysis (PRR/ROR with
-  chi-square and confidence intervals) for pharmacovigilance, plus Isolation Forest and
-  z-score/control-chart anomaly detection.
-- **Scenario simulation** — Monte Carlo modelling of clinical trial enrollment timelines
-  under uncertainty.
-- **A reusable risk-scoring framework** (`src/risk_framework/`) — a configurable,
-  weighted-composite scoring engine producing Low/Medium/High/Critical bands, shared
-  across all four modules.
-- **Fuzzy/approximate matching** for sanctions screening, with risk-banded analyst triage.
-- **Communicating to two audiences** — a full technical notebook per module *and* a
-  plain-English stakeholder summary (`reports/*_summary.md`) written for a non-technical
-  client sponsor.
-- **Production-style habits** — reproducible API pulls (cached with pull-date metadata),
-  versioned model artifacts with `.meta.json` cards (features, training date, CV
-  performance, caveats), and a `pytest` suite for the shared framework.
-- **Risk dashboard** — a Streamlit app surfacing every module's outputs interactively
-  (see below).
+📄 **[Read the case study](docs/CASE_STUDY.md)** for the situation/approach/result/
+recommendation behind each module, the overall architecture, and lessons learned.
+See [CLAUDE.md](CLAUDE.md) for the underlying role brief and working conventions.
 
 ## Risk dashboard
 
