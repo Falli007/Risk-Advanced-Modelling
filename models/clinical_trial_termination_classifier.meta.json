@@ -1,0 +1,62 @@
+{
+  "model": "RandomForestClassifier (n_estimators=200, max_depth=5, class_weight=balanced)",
+  "purpose": "Predict P(trial terminated/withdrawn/suspended) for per-trial risk scoring",
+  "therapeutic_area": "Diabetes",
+  "conditions_combined": [
+    "Diabetes Mellitus, Type 2",
+    "Diabetes Mellitus, Type 1",
+    "Diabetic Nephropathy",
+    "Diabetic Retinopathy",
+    "Gestational Diabetes"
+  ],
+  "numeric_features": [
+    "enrollment_count"
+  ],
+  "categorical_features": [
+    "phase_primary",
+    "study_type",
+    "lead_sponsor_class",
+    "is_fda_regulated_drug",
+    "is_fda_regulated_device"
+  ],
+  "training_rows": 455,
+  "class_balance": {
+    "terminated_withdrawn_suspended": 43,
+    "other": 412
+  },
+  "cv_method": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+  "cv_roc_auc": 0.8373221946263265,
+  "cv_classification_report": {
+    "0": {
+      "precision": 0.948780487804878,
+      "recall": 0.9441747572815534,
+      "f1-score": 0.9464720194647201,
+      "support": 412.0
+    },
+    "1": {
+      "precision": 0.4888888888888889,
+      "recall": 0.5116279069767442,
+      "f1-score": 0.5,
+      "support": 43.0
+    },
+    "accuracy": 0.9032967032967033,
+    "macro avg": {
+      "precision": 0.7188346883468835,
+      "recall": 0.7279013321291488,
+      "f1-score": 0.72323600973236,
+      "support": 455.0
+    },
+    "weighted avg": {
+      "precision": 0.9053182048303999,
+      "recall": 0.9032967032967033,
+      "f1-score": 0.90427796048234,
+      "support": 455.0
+    }
+  },
+  "trained_at": "2026-06-14T16:50:26.666516+00:00",
+  "caveats": [
+    "Only 43 of 455 eligible trials (9.5%) are terminated/withdrawn/suspended \u2014 metrics are 5-fold cross-validated out-of-fold predictions; the minority-class precision/recall estimates carry wide uncertainty at this sample size.",
+    "A LogisticRegression with class_weight='balanced' was also tried on this data and scored ROC-AUC ~0.59 (near random) while over-predicting terminations \u2014 RandomForestClassifier was chosen instead.",
+    "'enrollment_count' on ClinicalTrials.gov is typically the target, not actual enrollment-to-date."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "target_trial_nct_id": "NCT07135570",
+  "target_trial_title": "\"My Eyes, My Light\": Amar Chokh, Amar Alo",
+  "target_enrollment": 20000,
+  "benchmark_monthly_rate_mean": 8.497826305449482,
+  "benchmark_monthly_rate_std": 10.787293998783095,
+  "n_simulations": 10000,
+  "p_complete_within_horizon": 0.0,
+  "median_months_to_complete": null,
+  "p10_months": null,
+  "p90_months": null
+}

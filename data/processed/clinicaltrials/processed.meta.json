@@ -1,0 +1,15 @@
+{
+  "therapeutic_area": "Diabetes",
+  "conditions_combined": [
+    "Diabetes Mellitus, Type 2",
+    "Diabetes Mellitus, Type 1",
+    "Diabetic Nephropathy",
+    "Diabetic Retinopathy",
+    "Gestational Diabetes"
+  ],
+  "generated_at": "2026-06-14T16:50:26.769218+00:00",
+  "files": {
+    "trial_watchlist.csv": "478 trials, risk-scored",
+    "enrollment_simulation.json": "Monte Carlo enrollment-completion scenario for the largest recruiting trial"
+  }
+}
