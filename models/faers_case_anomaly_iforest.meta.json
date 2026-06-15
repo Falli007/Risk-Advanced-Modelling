@@ -1,0 +1,22 @@
+{
+  "model": "IsolationForest",
+  "purpose": "Case-level anomaly flagging for FAERS reports (signal-management triage)",
+  "drug": "HUMIRA",
+  "features": [
+    "patientonsetage_imputed",
+    "n_reactions",
+    "n_drugs",
+    "serious"
+  ],
+  "contamination": 0.05,
+  "age_median_imputed": 52.0,
+  "training_rows": 3000,
+  "n_flagged": 150,
+  "anomaly_rate": 0.05,
+  "trained_at": "2026-06-14T16:49:46.385913+00:00",
+  "caveats": [
+    "Unsupervised: there is no ground-truth label for 'this report deserves review', so 'anomaly' means 'statistically unusual given this drug's typical report profile', not 'confirmed safety issue'.",
+    "contamination=0.05 is an analyst-chosen assumption (expect ~5% of reports to be flagged), not derived from data.",
+    "33.3% of reports were missing patient age and had it imputed with the cohort median \u2014 flagged reports with imputed age should be interpreted with that in mind."
+  ]
+}

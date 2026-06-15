@@ -1,0 +1,8 @@
+{
+  "drug": "HUMIRA",
+  "generated_at": "2026-06-14T16:49:46.413827+00:00",
+  "files": {
+    "signal_watchlist.csv": "19 reaction-term signals, risk-scored",
+    "case_anomalies.csv": "3000 reports with Isolation Forest anomaly scores"
+  }
+}
