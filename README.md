@@ -1,19 +1,40 @@
-# Risk & Advanced Modelling — Simulation Project
+# Risk & Advanced Modelling
 
-Four independent risk-analytics modules for a regulated/life-sciences setting, each
-pulling **real, live, public regulatory data** (openFDA, ClinicalTrials.gov, US Treasury
-OFAC), built on a shared risk-scoring/ML framework, and surfaced through an interactive
-dashboard with stakeholder-facing reports.
+Four risk-analytics modules for a regulated, life-sciences-style setting. Each one pulls real, live data from a public regulatory source (openFDA, ClinicalTrials.gov, US Treasury OFAC), scores it with a shared risk-scoring engine, and writes both a Streamlit dashboard view and a stakeholder-facing markdown report.
 
-📄 **[Read the case study](docs/CASE_STUDY.md)** for the situation/approach/result/
-recommendation behind each module, the overall architecture, and lessons learned.
-See [CLAUDE.md](CLAUDE.md) for the underlying role brief and working conventions.
+I wanted to practice risk modelling the way it's actually done in a regulated environment: no synthetic toy data, cross-validated metrics instead of a single train/test split, and every model's limitations documented next to its results instead of left out.
 
-## Risk dashboard
+Read [docs/CASE_STUDY.md](docs/CASE_STUDY.md) for the situation, approach, result, and recommendation behind each module. [CLAUDE.md](CLAUDE.md) has the underlying working brief.
 
-A Streamlit app (`app/dashboard.py`) presents the risk outputs of all four modules in one
-place — risk-banded watchlists, charts, model performance cards, and the stakeholder
-summaries — so a reviewer can explore the results without running any code.
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Sources
+        A1[openFDA FAERS]
+        A2[openFDA Enforcement]
+        A3[ClinicalTrials.gov]
+        A4[OFAC SDN list]
+    end
+
+    A1 --> B1[Signal detection: IsolationForest]
+    A2 --> B2[Recall risk: Logistic Regression]
+    A3 --> B3[Trial risk: RandomForest]
+    A4 --> B4[Fuzzy name matching]
+
+    B1 --> C[Shared RiskScoringEngine]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+
+    C --> D[Risk bands: Low / Medium / High / Critical]
+    D --> E[Streamlit dashboard]
+    D --> F[Markdown stakeholder reports]
+```
+
+Each module has its own notebook and its own model, but they all hand their output to the same `RiskScoringEngine` (`src/risk_framework/risk_scoring.py`), which combines named, normalized risk factors into one score and one of four risk bands. That's what keeps the scoring approach consistent across four otherwise unrelated data sources.
+
+## Dashboard
 
 ```bash
 streamlit run app/dashboard.py
@@ -27,53 +48,35 @@ streamlit run app/dashboard.py
 |---|---|
 | ![Clinical trials dashboard](docs/screenshots/clinicaltrials.png) | ![OFAC dashboard](docs/screenshots/ofac.png) |
 
-The dashboard reads pre-generated outputs from `data/processed/<module>/`, so run each
-notebook at least once first (each notebook's final cells write these processed files
-alongside the `reports/*.md` summaries).
+The dashboard reads pre-generated output from `data/processed/<module>/`. Run each notebook at least once first, since the final cells in each one write those processed files and the `reports/*.md` summaries.
 
-## Modules
+## The four modules
 
-| # | Module | Data source | Notebook | Report |
-|---|--------|-------------|----------|--------|
-| 1 | Pharmacovigilance signal detection | [openFDA FAERS](https://open.fda.gov/apis/drug/event/) | `notebooks/01_faers_signal_detection.ipynb` | `reports/faers_summary.md` |
-| 2 | Recall / manufacturing quality risk | [openFDA Enforcement](https://open.fda.gov/apis/drug/enforcement/) | `notebooks/02_enforcement_recall_risk.ipynb` | `reports/enforcement_summary.md` |
-| 3 | Clinical trial risk & scenario modelling | [ClinicalTrials.gov v2](https://clinicaltrials.gov/data-api/api) | `notebooks/03_clinicaltrials_risk.ipynb` | `reports/clinicaltrials_summary.md` |
-| 4 | Sanctions / compliance entity screening | [OFAC SDN list](https://sanctionslistservice.ofac.treas.gov/) | `notebooks/04_ofac_screening.ipynb` | `reports/ofac_summary.md` |
+| # | Module | Data source | Notebook |
+|---|--------|-------------|----------|
+| 1 | Pharmacovigilance signal detection | [openFDA FAERS](https://open.fda.gov/apis/drug/event/) | `notebooks/01_faers_signal_detection.ipynb` |
+| 2 | Recall / manufacturing quality risk | [openFDA Enforcement](https://open.fda.gov/apis/drug/enforcement/) | `notebooks/02_enforcement_recall_risk.ipynb` |
+| 3 | Clinical trial risk & scenario modelling | [ClinicalTrials.gov v2](https://clinicaltrials.gov/data-api/api) | `notebooks/03_clinicaltrials_risk.ipynb` |
+| 4 | Sanctions / compliance entity screening | [OFAC SDN list](https://sanctionslistservice.ofac.treas.gov/) | `notebooks/04_ofac_screening.ipynb` |
 
-All four notebooks run end-to-end against live data and have been executed at least once.
+All four notebooks have been run end to end against live data at least once. Run them in order; the first run fetches and caches data into `data/raw/<module>/`, later runs reuse the cache.
 
-Run notebooks in order from the `notebooks/` directory (each is self-contained). First
-runs will fetch and cache data into `data/raw/<module>/`; subsequent runs use the cache.
+### What goes into a risk score
 
-### How a risk score is built
-
-Each module's `risk_score` is a **weighted composite**, produced by the shared
-`RiskScoringEngine` (`src/risk_framework/risk_scoring.py`) from several inputs — some
-rule-based/statistical, some the output of an ML model:
-
-- **FAERS**: PRR/ROR signal strength + statistical confidence + report volume.
-- **Enforcement**: recall frequency + recency + a logistic-regression model's predicted
-  P(Class I recall).
-- **Clinical trials**: a RandomForest model's predicted P(terminated/withdrawn/suspended)
-  + reporting-quality risk + trial-scale risk.
+- **FAERS**: PRR/ROR signal strength, statistical confidence, and report volume.
+- **Enforcement**: recall frequency and recency, plus a logistic regression model's predicted probability of a Class I recall.
+- **Clinical trials**: a RandomForest model's predicted probability of termination/withdrawal/suspension, plus reporting-quality and trial-scale risk.
 - **OFAC**: fuzzy match strength against the SDN list.
 
-## Models
+## Models and results
 
-Modules 1-3 each train and persist a model to `models/`, with a `.meta.json`
-sidecar recording features, training date, dataset size, and (where applicable)
-cross-validated performance metrics:
-
-| Model | Type | Dataset | CV performance |
+| Model | Type | Dataset | Cross-validated performance |
 |---|---|---|---|
-| `faers_case_anomaly_iforest.joblib` | IsolationForest (unsupervised) | 3,000 HUMIRA FAERS reports | 5.0% flagged at contamination=0.05 (no ground-truth labels) |
-| `recall_severity_classifier.joblib` | Logistic Regression (TF-IDF + OneHotEncoder) | 3,000 openFDA drug recalls (9.9% Class I) | ROC-AUC 0.97 (5-fold stratified CV) |
-| `clinical_trial_termination_classifier.joblib` | RandomForest | 455 trials across 5 related Diabetes conditions (9.5% terminated/withdrawn/suspended) | ROC-AUC 0.84 (5-fold stratified CV) |
+| `faers_case_anomaly_iforest.joblib` | IsolationForest (unsupervised) | 3,000 HUMIRA FAERS reports | 5% flagged at contamination=0.05, no ground truth to score against |
+| `recall_severity_classifier.joblib` | Logistic Regression (TF-IDF + one-hot) | 3,000 openFDA recalls, 9.9% Class I | ROC-AUC 0.97 (5-fold stratified) |
+| `clinical_trial_termination_classifier.joblib` | RandomForest | 455 trials across 5 diabetes conditions, 9.5% terminated/withdrawn/suspended | ROC-AUC 0.84 (5-fold stratified) |
 
-All classifiers are evaluated via cross-validation rather than a single
-train/test split, since the positive classes are small (a single split gave
-misleadingly optimistic or unstable numbers). See each notebook's "caveats"
-section and the corresponding `.meta.json` for details and known limitations.
+Every classifier is evaluated with cross-validation rather than one train/test split, because the positive classes are small and a single split gave unstable, overly optimistic numbers depending on which rows landed in the test set. Each model ships a `.meta.json` sidecar recording its features, training date, and dataset size, and each notebook has a caveats section covering what the model doesn't handle well.
 
 ## Setup
 
@@ -86,35 +89,29 @@ pip install -r requirements.txt
 ## Project layout
 
 ```
-app/                    # Streamlit risk dashboard
-src/data_connectors/    # one module per external API
-src/risk_framework/     # shared, reusable risk-modelling components
-src/utils/               # HTTP fetch + caching with pull metadata
-data/raw/                # cached raw API responses + .meta.json sidecars (gitignored)
-data/processed/          # cleaned/feature-engineered data, consumed by the dashboard
-models/                  # trained model artifacts (.joblib) + metadata (.meta.json)
-notebooks/               # analysis notebooks, one per module
-reports/                 # stakeholder-facing summaries (markdown)
-tests/                   # unit tests for src/risk_framework
-docs/screenshots/        # dashboard screenshots used in this README
+app/                    Streamlit risk dashboard
+src/data_connectors/     one module per external API
+src/risk_framework/      shared risk-scoring components
+src/utils/               HTTP fetch and caching, with pull metadata
+data/raw/                cached raw API responses (gitignored)
+data/processed/          cleaned data consumed by the dashboard
+models/                  trained model artifacts (.joblib) + metadata
+notebooks/               one notebook per module
+reports/                 stakeholder-facing markdown summaries
+tests/                   unit tests for src/risk_framework
+docs/screenshots/        dashboard screenshots used in this README
 ```
 
-## Running tests
+## Testing
 
 ```bash
 pytest
 ```
 
-## Limitations & governance notes
+## Limitations and governance notes
 
-This is a practice/portfolio project, not a production system or a regulatory submission.
-All data is real and pulled live from public sources, but:
+This is a portfolio project, not a production system or a regulatory submission. All the data is real and pulled live, but:
 
-- Risk scores are **decision-support aids for analyst triage**, not automated
-  determinations — every report and dashboard page says so explicitly.
-- Some inputs (e.g. the OFAC screening "vendor list", the chosen drug/therapeutic area)
-  are illustrative selections for this exercise, not a real client's data — this is
-  called out where it applies.
-- Model caveats (class imbalance, sample size, lack of ground truth for unsupervised
-  methods) are documented in each `.meta.json` and notebook rather than glossed over —
-  reflecting the level of scrutiny this kind of work gets under real regulatory review.
+- Risk scores are decision-support aids meant for analyst triage, not automated determinations. Every report and dashboard page says so explicitly.
+- Some inputs, like the OFAC "vendor list" and the specific drug/therapeutic area chosen, are illustrative selections for this exercise rather than a real client's actual data, and that's flagged wherever it applies.
+- Known caveats (class imbalance, small sample sizes, no ground truth for the unsupervised anomaly model) are documented in each `.meta.json` and notebook rather than smoothed over, at roughly the level of scrutiny this kind of work would get under real regulatory review.
