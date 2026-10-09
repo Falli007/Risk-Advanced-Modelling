@@ -4,7 +4,7 @@ Four risk-analytics modules for a regulated, life-sciences-style setting. Each o
 
 I wanted to practice risk modelling the way it's actually done in a regulated environment: no synthetic toy data, cross-validated metrics instead of a single train/test split, and every model's limitations documented next to its results instead of left out.
 
-Read [docs/CASE_STUDY.md](docs/CASE_STUDY.md) for the situation, approach, result, and recommendation behind each module. [CLAUDE.md](CLAUDE.md) has the underlying working brief.
+Read [docs/CASE_STUDY.md](docs/CASE_STUDY.md) for the situation, approach, results, and recommendations behind each module.
 
 ## Architecture
 
